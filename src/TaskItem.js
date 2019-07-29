@@ -15,7 +15,7 @@ import TextField from '@material-ui/core/TextField';
 import EventIcon from '@material-ui/icons/Event';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
-import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import MomentUtils from '@date-io/moment';
 import moment from 'moment';
 
@@ -160,6 +160,7 @@ class TaskItem extends Component {
     }
 
     return (
+      
       <Card className={classes.card}>
         <CardContent className={classes.cardContent}>
             <Checkbox className={classes.checkBox}
@@ -187,7 +188,7 @@ class TaskItem extends Component {
             <EventIcon />
           </IconButton>
           <MuiPickersUtilsProvider utils={MomentUtils}>
-            <DatePicker
+            <DateTimePicker
               variant="inline"
               value={this.state.dateValue}
               InputProps={{disableUnderline: true, className: classes.dateTime}}
