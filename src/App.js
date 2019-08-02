@@ -6,20 +6,27 @@ import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import Avatar from '@material-ui/core/Avatar';
 import Divider from '@material-ui/core/Divider';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
+import InboxIcon from '@material-ui/icons/Inbox';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import FavoriteIcon from '@material-ui/icons/Favorite';
+import DateRange from '@material-ui/icons/DateRange';
+import DeleteOutline from '@material-ui/icons/DeleteOutline';
+import Schedule from '@material-ui/icons/Schedule';
+import Done from '@material-ui/icons/Done';
+import MenuItem from '@material-ui/core/MenuItem';
+import Menu from '@material-ui/core/Menu';
+import InsertDriveFile from '@material-ui/icons/InsertDriveFile';
+import FolderSpecial from '@material-ui/icons/FolderSpecial';
 
 
 
@@ -87,6 +94,12 @@ const useStyles = theme => ({
     }),
     marginLeft: 0,
   },
+  root: {
+    verticalAlign: "bottom"
+  },
+  title: {
+    flexGrow: 1,
+  }
 });
 
 class App extends Component {
@@ -95,9 +108,12 @@ class App extends Component {
 
     this.state = {
       tasks: [],
-      drawerOpen: false
+      drawerOpen: false,
+      anchorEl: null,
     };
 
+    //http://api.ambrosia.red/tasks
+    //http://api.ambrosia.red/tasks
     axios.get("http://api.ambrosia.red/tasks").then(res => {
       this.setState({
         tasks: res.data
@@ -107,6 +123,8 @@ class App extends Component {
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleAddTask = this.handleAddTask.bind(this);
     this.toggleDrawer = this.toggleDrawer.bind(this);
+    this.handleClose = this.handleClose.bind(this);
+    this.handleMenu = this.handleMenu.bind(this);
   }
 
   //function that handles the update given a task passed in 
@@ -126,6 +144,8 @@ class App extends Component {
     });
   }
 
+  //http://api.ambrosia.red/tasks
+  //http://localhost:18080/tasks
   handleAddTask() {
     axios.post("http://api.ambrosia.red/tasks", {
       due_date: "2019-07-14 01:29:03"
@@ -145,6 +165,19 @@ class App extends Component {
     });
   }
 
+  handleClose() {
+    this.setState({
+      anchorEl: null //menu is not anchored to anything 
+    });
+  }
+
+  handleMenu(event) {
+    // console.log(event);
+    // console.log(event.currentTarget);
+    this.setState ({
+      anchorEl: event.currentTarget //event.currentTarget is the menu 
+    });
+  }
 
 
   render() {
@@ -179,11 +212,59 @@ class App extends Component {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" noWrap>
+            <Typography variant="h6" className={classes.title} noWrap >
               Ambrosia
             </Typography>
+
+            <div>
+              <IconButton
+                color="inherit"
+                onClick={this.handleMenu}
+              >
+                <AddIcon />
+              </IconButton>
+              <Menu
+                id="menu-appbar"
+                anchorEl={this.state.anchorEl}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                open={this.state.anchorEl !== null} //if the anchorEl is not null then the menu should be opened 
+                onClose={this.handleClose}
+                
+              >
+              <List className={classes.root}>
+                <ListItem>
+                  <ListItemAvatar>
+                    <Avatar>
+                      <InsertDriveFile />
+                    </Avatar>
+                  </ListItemAvatar>
+                    <ListItemText primary="New Project" secondary="Create a project and work towards completion one to-do at a time." />
+                </ListItem>
+                <ListItem>
+                  <ListItemAvatar>
+                    <Avatar>
+                      <FolderSpecial />
+                    </Avatar>
+                  </ListItemAvatar>
+                    <ListItemText primary="New Area" secondary="Group your projects based on your committments, such as Classes or Family." />
+                </ListItem>
+              </List>
+                {/* <MenuItem>New Project</MenuItem>
+                <MenuItem>New Area</MenuItem> */}
+              </Menu>
+            </div>
+
           </Toolbar>
         </AppBar>
+
         <Drawer
           className={classes.drawer}
           open={this.state.drawerOpen}
@@ -202,22 +283,29 @@ class App extends Component {
           </div>
           <Divider />
           <List>
-            {['Inbox', 'Today', 'Upcoming', 'Trash'].map((text, index) => (
-              <ListItem button key={text}>
-                <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <FavoriteIcon />}</ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItem>
-            ))}
+            <ListItem 
+                button={true}>
+                <InboxIcon />
+                <ListItemText>Inbox</ListItemText>
+            </ListItem>
+            <ListItem button={true}>
+              <Schedule />
+              <ListItemText>Today</ListItemText>
+            </ListItem>
+            <ListItem button={true}>
+              <DateRange />
+              <ListItemText>Upcoming</ListItemText>
+            </ListItem>
+            <ListItem button={true}>
+              <Done />
+                <ListItemText>Logbook</ListItemText>
+            </ListItem> 
+            <ListItem button={true}>
+              <DeleteOutline />
+              <ListItemText>Waste</ListItemText>
+            </ListItem>
           </List>
-          {/* <Divider />
-          <List>
-            {['All mail', 'Trash', 'Spam'].map((text, index) => (
-              <ListItem button key={text}>
-                <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItem>
-            ))}
-          </List> */}
+          <Divider />
         </Drawer>
         <Fab 
             color="primary" 
