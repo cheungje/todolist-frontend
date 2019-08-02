@@ -8,8 +8,7 @@ import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import Avatar from '@material-ui/core/Avatar';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Divider from '@material-ui/core/Divider';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import InboxIcon from '@material-ui/icons/Inbox';
@@ -110,11 +109,12 @@ class App extends Component {
       tasks: [],
       drawerOpen: false,
       anchorEl: null,
+      selectedIndex: true
     };
 
     //http://api.ambrosia.red/tasks
     //http://api.ambrosia.red/tasks
-    axios.get("http://api.ambrosia.red/tasks").then(res => {
+    axios.get("http://localhost:18080/tasks").then(res => {
       this.setState({
         tasks: res.data
       });
@@ -147,7 +147,7 @@ class App extends Component {
   //http://api.ambrosia.red/tasks
   //http://localhost:18080/tasks
   handleAddTask() {
-    axios.post("http://api.ambrosia.red/tasks", {
+    axios.post("http://localhost:18080/tasks", {
       due_date: "2019-07-14 01:29:03"
     }).then(res => {
       let updatedTasks = this.state.tasks;
@@ -176,6 +176,12 @@ class App extends Component {
     // console.log(event.currentTarget);
     this.setState ({
       anchorEl: event.currentTarget //event.currentTarget is the menu 
+    });
+  }
+
+  handleListItemClick(event, index) {
+    this.setState({
+      selectedIndex: index
     });
   }
 
@@ -239,21 +245,25 @@ class App extends Component {
                 onClose={this.handleClose}
                 
               >
-              <List className={classes.root}>
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar>
+              <List>
+                <ListItem 
+                  button
+                  selected={this.state.selectedIndex === 0}
+                  onClick={(event) => this.handleListItemClick(event, 0)}
+                  >
+                  <ListItemIcon>
                       <InsertDriveFile />
-                    </Avatar>
-                  </ListItemAvatar>
+                  </ListItemIcon>
                     <ListItemText primary="New Project" secondary="Create a project and work towards completion one to-do at a time." />
                 </ListItem>
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar>
+                <ListItem
+                  button
+                  selected={this.state.selectedIndex === 1}
+                  onClick={(event) => this.handleListItemClick(event, 1)}
+                  >
+                  <ListItemIcon>
                       <FolderSpecial />
-                    </Avatar>
-                  </ListItemAvatar>
+                  </ListItemIcon>
                     <ListItemText primary="New Area" secondary="Group your projects based on your committments, such as Classes or Family." />
                 </ListItem>
               </List>
