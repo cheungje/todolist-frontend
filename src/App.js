@@ -78,12 +78,11 @@ const useStyles = theme => ({
   },
   content: {
     flexGrow: 1,
-    padding: theme.spacing(3),
+    padding: 75,
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    marginLeft: -drawerWidth,
     width: "auto"
   },
   contentShift: {
@@ -91,13 +90,16 @@ const useStyles = theme => ({
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    marginLeft: 0,
+    marginLeft: drawerWidth,
   },
   root: {
     verticalAlign: "bottom"
   },
   title: {
     flexGrow: 1,
+  },
+  menu: {
+    width: 350
   }
 });
 
@@ -107,7 +109,7 @@ class App extends Component {
 
     this.state = {
       tasks: [],
-      drawerOpen: false,
+      drawerOpen: true  ,
       anchorEl: null,
       selectedIndex: true
     };
@@ -125,6 +127,7 @@ class App extends Component {
     this.toggleDrawer = this.toggleDrawer.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleMenu = this.handleMenu.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
   }
 
   //function that handles the update given a task passed in 
@@ -144,6 +147,20 @@ class App extends Component {
     });
   }
 
+  handleDelete(task) {
+    let updatedTasks = this.state.tasks;
+    for (var i = 0; i < updatedTasks.length; i++) {
+      if (updatedTasks[i].id === task.id) {
+        updatedTasks.splice(i);
+        break;
+      }
+    }
+    this.setState({
+      tasks: updatedTasks
+    });
+  }
+
+  //post creates 
   //http://api.ambrosia.red/tasks
   //http://localhost:18080/tasks
   handleAddTask() {
@@ -194,7 +211,9 @@ class App extends Component {
         <TaskItem
           key={this.state.tasks[i].id}
           task={this.state.tasks[i]} //retrieves entire task with id, name, due_date, starred, notes
-          onUpdate={this.handleUpdate} />
+          onUpdate={this.handleUpdate} 
+          onDelete={this.handleDelete} 
+          />
       );
     }
 
@@ -222,14 +241,14 @@ class App extends Component {
               Ambrosia
             </Typography>
 
-            <div>
+            <div >
               <IconButton
                 color="inherit"
                 onClick={this.handleMenu}
               >
                 <AddIcon />
               </IconButton>
-              <Menu
+              <Menu                
                 id="menu-appbar"
                 anchorEl={this.state.anchorEl}
                 anchorOrigin={{
@@ -247,28 +266,25 @@ class App extends Component {
               >
               <List>
                 <ListItem 
+                  className={classes.menu}
                   button
                   selected={this.state.selectedIndex === 0}
                   onClick={(event) => this.handleListItemClick(event, 0)}
                   >
-                  <ListItemIcon>
-                      <InsertDriveFile />
-                  </ListItemIcon>
-                    <ListItemText primary="New Project" secondary="Create a project and work towards completion one to-do at a time." />
+                  <ListItemIcon><InsertDriveFile /></ListItemIcon>
+                    <ListItemText 
+                    primary="New Project" secondary="Create a project and work towards completion one to-do at a time." />
                 </ListItem>
                 <ListItem
+                  className={classes.menu}
                   button
                   selected={this.state.selectedIndex === 1}
                   onClick={(event) => this.handleListItemClick(event, 1)}
                   >
-                  <ListItemIcon>
-                      <FolderSpecial />
-                  </ListItemIcon>
+                  <ListItemIcon><FolderSpecial /></ListItemIcon>
                     <ListItemText primary="New Area" secondary="Group your projects based on your committments, such as Classes or Family." />
                 </ListItem>
               </List>
-                {/* <MenuItem>New Project</MenuItem>
-                <MenuItem>New Area</MenuItem> */}
               </Menu>
             </div>
 
@@ -281,7 +297,6 @@ class App extends Component {
           variant="persistent"
           anchor="left"
           onClose={() => this.toggleDrawer(false)}
-          onOpen={() => this.toggleDrawer(true)}
           classes={{
             paper: classes.drawerPaper
           }}
@@ -294,25 +309,39 @@ class App extends Component {
           <Divider />
           <List>
             <ListItem 
-                button={true}>
-                <InboxIcon />
-                <ListItemText>Inbox</ListItemText>
+              button={true}
+              key="Inbox"
+            >
+              <ListItemIcon><InboxIcon /></ListItemIcon>
+              <ListItemText primary="Inbox" />
             </ListItem>
-            <ListItem button={true}>
-              <Schedule />
-              <ListItemText>Today</ListItemText>
+            <ListItem 
+              button={true}
+              key="Today"
+              >
+              <ListItemIcon><Schedule /></ListItemIcon>
+              <ListItemText primary="Today" />
             </ListItem>
-            <ListItem button={true}>
-              <DateRange />
-              <ListItemText>Upcoming</ListItemText>
+            <ListItem 
+              button={true}
+              key="Upcoming"
+              >
+              <ListItemIcon><DateRange /></ListItemIcon>
+              <ListItemText primary="Upcoming" />
             </ListItem>
-            <ListItem button={true}>
-              <Done />
-                <ListItemText>Logbook</ListItemText>
+            <ListItem 
+              button={true}
+              key="Logbook"
+              >
+              <ListItemIcon><Done /></ListItemIcon>
+              <ListItemText primary="Logbook" />
             </ListItem> 
-            <ListItem button={true}>
-              <DeleteOutline />
-              <ListItemText>Waste</ListItemText>
+            <ListItem 
+              button={true}
+              key="Waste"
+              >
+              <ListItemIcon><DeleteOutline /></ListItemIcon>
+              <ListItemText primary="Waste" />
             </ListItem>
           </List>
           <Divider />

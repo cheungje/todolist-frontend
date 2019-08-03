@@ -18,6 +18,7 @@ import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import { DateTimePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import MomentUtils from '@date-io/moment';
 import moment from 'moment';
+import DeleteOutline from '@material-ui/icons/DeleteOutline';
 
 
 const useStyles = theme => ({
@@ -38,7 +39,7 @@ const useStyles = theme => ({
   },
   expand: {
     transform: 'rotate(0)', //rotate 0 deg 
-    marginLeft: 'auto',
+    // marginLeft: 'auto',
     transition: theme.transitions.create('transform', {
       duration: theme.transitions.duration.shortest
     })
@@ -54,6 +55,9 @@ const useStyles = theme => ({
     width: 200,
     textAlign: "right",
     fontSize: 13
+  },
+  deleteIcon: {
+    marginLeft: "auto"
   }
 });
 
@@ -78,6 +82,7 @@ class TaskItem extends Component {
     this.handleNameUpdate = this.handleNameUpdate.bind(this);
     this.handleFavoriteClick = this.handleFavoriteClick.bind(this);
     this.handleDateAccept = this.handleDateAccept.bind(this);
+    this.handleDeleteTask = this.handleDeleteTask.bind(this);
 
   }
 
@@ -87,17 +92,24 @@ class TaskItem extends Component {
     })
   }
 
+  //put updates 
   handleChange() {
     //axios.put(url, map of request body)
-    axios.put("http://api.ambrosia.red/tasks/" + this.props.task.id, {
+    axios.put("http://localhost:18080/tasks/" + this.props.task.id, {
       completed: !this.props.task.completed //actual request body like {completed: true}
     }).then(res => {
       this.props.onUpdate(res.data); //res.data is "task," a map
     });
   }
 
+  handleDeleteTask() {
+    axios.delete("http://localhost:18080/tasks/" + this.props.task.id).then(res => {
+      this.props.onDelete(this.props.task);
+    });
+  }
+
   handleBlur(e) {
-    axios.put("http://api.ambrosia.red/tasks/" + this.props.task.id, {
+    axios.put("http://localhost:18080/tasks/" + this.props.task.id, {
       notes: this.state.notesValue, //get from reference called this.textInput
       name: this.state.nameValue
     }).then(res => {
@@ -107,7 +119,7 @@ class TaskItem extends Component {
 
   handleDateToggle(close) {
     if (close) {
-      axios.put("http://api.ambrosia.red/tasks/" + this.props.task.id, {
+      axios.put("http://localhost:18080/tasks/" + this.props.task.id, {
         //2019-07-14 01:29:03
         due_date: this.state.dateValue.format("YYYY-MM-DD")
       }).then(res => {
@@ -119,6 +131,9 @@ class TaskItem extends Component {
       datePickerOpen: !this.state.datePickerOpen,
     });
   }
+
+
+
 
   handleDateAccept(date) {
     this.setState({
@@ -140,7 +155,7 @@ class TaskItem extends Component {
   }
 
   handleFavoriteClick() {
-    axios.put("http://api.ambrosia.red/tasks/" + this.props.task.id, {
+    axios.put("http://localhost:18080/tasks/" + this.props.task.id, {
       starred: !this.props.task.starred 
     }).then(res => {
       this.props.onUpdate(res.data); //res.data is "task," a map
@@ -162,10 +177,13 @@ class TaskItem extends Component {
     return (
       
       <Card className={classes.card}>
-        <CardContent className={classes.cardContent}>
+        <CardContent 
+          className={classes.cardContent}
+        >
             <Checkbox className={classes.checkBox}
                       checked={this.props.task.completed}
-                      onChange={this.handleChange} />
+                      onChange={this.handleChange} 
+                      />
             <TextField
               fullWidth={true}
               placeholder="New Task"
@@ -197,6 +215,12 @@ class TaskItem extends Component {
               onChange={this.handleDateAccept}
             />
           </MuiPickersUtilsProvider>
+          <IconButton
+            className={classes.deleteIcon}
+            onClick={this.handleDeleteTask}
+            >
+              <DeleteOutline />
+          </IconButton>
           <IconButton
             className={clsx(classes.expand, {
               [classes.expandOpen]: this.state.expanded,
