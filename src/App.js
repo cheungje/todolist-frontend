@@ -22,20 +22,16 @@ import DateRange from '@material-ui/icons/DateRange';
 import DeleteOutline from '@material-ui/icons/DeleteOutline';
 import Schedule from '@material-ui/icons/Schedule';
 import Done from '@material-ui/icons/Done';
-import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import InsertDriveFile from '@material-ui/icons/InsertDriveFile';
 import FolderSpecial from '@material-ui/icons/FolderSpecial';
+import moment from 'moment';
 
 
 
 const drawerWidth = 240;
 
 const useStyles = theme => ({
-  root: {
-    display: 'flex',
-    paddingTop: 40
-  },
   fab: {
     right: 20,
     bottom: 20,
@@ -92,9 +88,6 @@ const useStyles = theme => ({
     }),
     marginLeft: drawerWidth,
   },
-  root: {
-    verticalAlign: "bottom"
-  },
   title: {
     flexGrow: 1,
   },
@@ -109,9 +102,12 @@ class App extends Component {
 
     this.state = {
       tasks: [],
-      drawerOpen: true  ,
+      drawerOpen: true,
       anchorEl: null,
-      selectedIndex: true
+      selectedIndex: true,
+      trashed: false,
+      completed: false,
+      dateFilter: undefined
     };
 
     //http://api.ambrosia.red/tasks
@@ -127,7 +123,7 @@ class App extends Component {
     this.toggleDrawer = this.toggleDrawer.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.handleMenu = this.handleMenu.bind(this);
-    this.handleDelete = this.handleDelete.bind(this);
+    this.handleUpdatedDrawerItem = this.handleUpdatedDrawerItem.bind(this);
   }
 
   //function that handles the update given a task passed in 
@@ -147,17 +143,35 @@ class App extends Component {
     });
   }
 
-  handleDelete(task) {
-    let updatedTasks = this.state.tasks;
-    for (var i = 0; i < updatedTasks.length; i++) {
-      if (updatedTasks[i].id === task.id) {
-        updatedTasks.splice(i);
-        break;
+
+  handleUpdatedDrawerItem(drawerItem) {
+    let newState = {
+      completed: undefined,
+      trashed: undefined,
+      dateFilter: undefined
+    };
+
+    if (drawerItem === "inbox") {
+      newState.completed = false;
+      newState.trashed = false;
+    } else if (drawerItem === "waste") {
+      newState.trashed = true;
+    } else if (drawerItem === "logbook") {
+      newState.completed = true;
+    } else if (drawerItem === "today") {
+      newState.dateFilter = (due_date) => {
+        return moment(due_date).year() === moment().year()
+          && moment(due_date).month() === moment().month()
+          && moment(due_date).date() === moment().date();
       }
+    } else if (drawerItem === "upcoming") {
+      newState.dateFilter = (due_date) => {
+        let diff = moment(due_date).diff(moment(), 'days');
+        return diff >= 0 && diff <= 7; //moment() is current date 
+      };
     }
-    this.setState({
-      tasks: updatedTasks
-    });
+
+    this.setState(newState);
   }
 
   //post creates 
@@ -165,7 +179,7 @@ class App extends Component {
   //http://localhost:18080/tasks
   handleAddTask() {
     axios.post("http://localhost:18080/tasks", {
-      due_date: "2019-07-14 01:29:03"
+      due_date: moment().format('YYYY-MM-DD HH:mm:ss')
     }).then(res => {
       let updatedTasks = this.state.tasks;
       updatedTasks.push(res.data);
@@ -175,6 +189,7 @@ class App extends Component {
       });
     })
   }
+
 
   toggleDrawer(isOpen) {
     this.setState({
@@ -207,21 +222,27 @@ class App extends Component {
     let taskElements = [];
 
     for (var i = 0; i < this.state.tasks.length; i++) {
-      taskElements.push(
-        <TaskItem
-          key={this.state.tasks[i].id}
-          task={this.state.tasks[i]} //retrieves entire task with id, name, due_date, starred, notes
-          onUpdate={this.handleUpdate} 
-          onDelete={this.handleDelete} 
-          />
-      );
+      //either we don't care or it matches our filter 
+      //has to match both trashed & completed filters 
+      if ((this.state.trashed === undefined || this.state.tasks[i].trashed === this.state.trashed) 
+        && (this.state.completed === undefined || this.state.tasks[i].completed === this.state.completed)
+        && (this.state.dateFilter === undefined || this.state.dateFilter(this.state.tasks[i].due_date))) {
+        taskElements.push(
+          <TaskItem
+            key={this.state.tasks[i].id}
+            task={this.state.tasks[i]} //retrieves entire task with id, name, due_date, starred, notes
+            onUpdate={this.handleUpdate} 
+            onDelete={this.handleDelete} 
+            />
+        );
+      }
     }
 
     const { classes } = this.props;
 
     //render the list called taskElements
     return (
-      <div className={classes.root}>
+      <div>
         <CssBaseline />
         <AppBar
           position="fixed"
@@ -311,6 +332,7 @@ class App extends Component {
             <ListItem 
               button={true}
               key="Inbox"
+              onClick={() => this.handleUpdatedDrawerItem("inbox")}
             >
               <ListItemIcon><InboxIcon /></ListItemIcon>
               <ListItemText primary="Inbox" />
@@ -318,6 +340,7 @@ class App extends Component {
             <ListItem 
               button={true}
               key="Today"
+              onClick={() => this.handleUpdatedDrawerItem("today")}
               >
               <ListItemIcon><Schedule /></ListItemIcon>
               <ListItemText primary="Today" />
@@ -325,6 +348,7 @@ class App extends Component {
             <ListItem 
               button={true}
               key="Upcoming"
+              onClick={() => this.handleUpdatedDrawerItem("upcoming")}
               >
               <ListItemIcon><DateRange /></ListItemIcon>
               <ListItemText primary="Upcoming" />
@@ -332,6 +356,7 @@ class App extends Component {
             <ListItem 
               button={true}
               key="Logbook"
+              onClick={() => this.handleUpdatedDrawerItem("logbook")}
               >
               <ListItemIcon><Done /></ListItemIcon>
               <ListItemText primary="Logbook" />
@@ -339,6 +364,7 @@ class App extends Component {
             <ListItem 
               button={true}
               key="Waste"
+              onClick={() => this.handleUpdatedDrawerItem("waste")}
               >
               <ListItemIcon><DeleteOutline /></ListItemIcon>
               <ListItemText primary="Waste" />

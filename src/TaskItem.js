@@ -102,9 +102,12 @@ class TaskItem extends Component {
     });
   }
 
+  //want to update the tasks to set trashed=true
   handleDeleteTask() {
-    axios.delete("http://localhost:18080/tasks/" + this.props.task.id).then(res => {
-      this.props.onDelete(this.props.task);
+    axios.put("http://localhost:18080/tasks/" + this.props.task.id, {
+      trashed: true
+    }).then(res => {
+      this.props.onUpdate(res.data);
     });
   }
 
@@ -183,7 +186,7 @@ class TaskItem extends Component {
             <Checkbox className={classes.checkBox}
                       checked={this.props.task.completed}
                       onChange={this.handleChange} 
-                      />
+            />
             <TextField
               fullWidth={true}
               placeholder="New Task"
